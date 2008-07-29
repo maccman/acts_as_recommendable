@@ -30,11 +30,14 @@ module MadeByMany
         end
           
         define_method "recommended_#{options[:on_class].name.underscore.pluralize}" do
-          if self.aar_options[:use_dataset]
-            Logic.dataset_recommended(self, options)
-          else
+          # We're not using the dataset yet,
+          # it's not ready...
+          #
+          # if self.aar_options[:use_dataset]
+          #   Logic.dataset_recommended(self, options)
+          # else
             Logic.recommended(self, options)
-          end
+          # end
         end
         
         def self.aar_dataset(force = false)
