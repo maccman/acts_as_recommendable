@@ -1,0 +1,81 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+no_time_for_goodbye:
+    id: 1
+    name: No Time For Goodbye
+
+the_outcast:
+    id: 2
+    name: The Outcast
+    
+the_forgotten_garden:
+    id: 3
+    name: The Forgotten Garden
+    
+the_road_home:
+    id: 4
+    name: The Road Home
+    
+east_of_the_sun:
+    id: 5
+    name: East of the Sun
+    
+the_kite_runner:
+    id: 6
+    name: The Kite Runner
+    
+the_book_thief:
+    id: 7
+    name: The Book Thief
+    
+watchmen:
+    id: 8
+    name: The Watchmen
+    
+down_river:
+    id: 9
+    name: Down River
+    
+the_ghost:
+    id: 10
+    name: The Ghost
+    
+the_secret:
+    id: 11
+    name: The Secret
+    
+eclipse:
+    id: 12
+    name: Eclipse
+    
+twilight:
+    id: 13
+    name: Twilight
+    
+the_memory_garden:
+    id: 14
+    name: The Memory Garden
+    
+the_discovery_of_france:
+    id: 15
+    name: The Discovery of France
+    
+devil_may_care:
+    id: 16
+    name: Devil May Care
+    
+new_moon:
+    id: 17
+    name: New Moon
+    
+the_return:
+    id: 18
+    name: The Return
+    
+wife_in_the_north:
+    id: 19
+    name: Wife in the North
+    
+fractured:
+    id: 20
+    name: Fractured

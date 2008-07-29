@@ -1,0 +1,41 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+alex:
+    id: 1
+    name: Alex MacCaw
+
+stuart:
+    id: 2
+    name: Stuart Eccles
+    
+tim:
+    id: 3
+    name: Tim Malbon
+
+isaac:
+    id: 4
+    name: Isaac Pinnock
+    
+tom:
+    id: 5
+    name: Tom Nerling
+    
+matt:
+    id: 6
+    name: Matt Williams
+    
+julia:
+    id: 7
+    name: Julia Wojcicka
+    
+william:
+    id: 8
+    name: William Owen
+    
+oli:
+    id: 9
+    name: Oli Matthews
+    
+bobby:
+    id: 10
+    name: Bobby Chariot

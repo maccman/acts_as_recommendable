@@ -1,0 +1,189 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one_one:
+    user_id: 1
+    book_id: 1
+
+one_two:
+    user_id: 1
+    book_id: 2
+    
+one_three:
+    user_id: 1
+    book_id: 3
+    
+one_four:
+    user_id: 1
+    book_id: 4
+    
+one_five:
+    user_id: 1
+    book_id: 5
+    
+one_six:
+    user_id: 1
+    book_id: 6
+    
+one_seven:
+    user_id: 1
+    book_id: 7
+    
+one_eight:
+    user_id: 1
+    book_id: 8
+    
+two_one:
+    user_id: 2
+    book_id: 1
+
+two_two:
+    user_id: 2
+    book_id: 2
+    
+two_four:
+    user_id: 2
+    book_id: 4
+    
+two_five:
+    user_id: 2
+    book_id: 5
+    
+    
+two_seven:
+    user_id: 2
+    book_id: 7
+    
+two_eight:
+    user_id: 2
+    book_id: 8
+    
+three_three:
+    user_id: 3
+    book_id: 3
+    
+three_four:
+    user_id: 3
+    book_id: 4
+    
+three_five:
+    user_id: 3
+    book_id: 5
+    
+three_six:
+    user_id: 3
+    book_id: 6
+
+four_one:
+    user_id: 4
+    book_id: 9
+
+four_two:
+    user_id: 4
+    book_id: 10
+    
+four_three:
+    user_id: 4
+    book_id: 11
+    
+five_one:
+    user_id: 5
+    book_id: 9
+
+five_two:
+    user_id: 5
+    book_id: 10
+    
+six_one:
+    user_id: 6
+    book_id: 1
+
+six_two:
+    user_id: 6
+    book_id: 2
+    
+six_three:
+    user_id: 6
+    book_id: 19
+    
+six_four:
+    user_id: 6
+    book_id: 20
+    
+seven_one:
+    user_id: 7
+    book_id: 1
+
+seven_two:
+    user_id: 7
+    book_id: 2
+    
+seven_four:
+    user_id: 7
+    book_id: 20
+
+eight_one:
+    user_id: 8
+    book_id: 12
+
+eight_two:
+    user_id: 8
+    book_id: 13
+    
+eight_three:
+    user_id: 8
+    book_id: 14
+    
+eight_four:
+    user_id: 8
+    book_id: 15
+    
+eight_five:
+    user_id: 8
+    book_id: 1
+    
+eight_six:
+    user_id: 8
+    book_id: 10
+    
+eight_seven:
+    user_id: 8
+    book_id: 20
+    
+nine_one:
+    user_id: 9
+    book_id: 12
+
+nine_two:
+    user_id: 9
+    book_id: 13
+    
+
+nine_five:
+    user_id: 9
+    book_id: 1
+    
+nine_six:
+    user_id: 9
+    book_id: 10
+    
+nine_seven:
+    user_id: 9
+    book_id: 20
+    
+ten_three:
+    user_id: 10
+    book_id: 14
+    
+ten_five:
+    user_id: 10
+    book_id: 1
+    
+ten_six:
+    user_id: 10
+    book_id: 10
+    
+ten_seven:
+    user_id: 10
+    book_id: 20
+    
+    
