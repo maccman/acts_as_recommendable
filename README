@@ -1,8 +1,29 @@
 ActsAsRecommendable
-=================
+===================
 
-ActsAsRecommendable is a plugin for Rails that simplifies collective intelligence.
+ActsAsRecommendable is a plugin for Rails that simplifies collaborative filtering
 
+The plugin provides a mechanism for finding loose associations between users and items which we can tell you
+* Given a user, return other similar users based on what items they have all bought/bookmarked/rated/etc
+* Given a user, return recommended items based on the items bought/bookmarked/rated/etc by that user and the items bought/bookmarked/rated/etc by other users.
+
+The plugin calculations can be made online and offline and stored using the rails cache (such as memcache) for online retrieval. Online retrieval of recommendations uses item-based collaborative filtering using the offline items similarity matrix stored in the cache. This can give up-to-date results with a much lower processing overhead.
+
+Much thanks to Toby Segaran and his excellent book Programming Collective Intelligence (http://oreilly.com/catalog/9780596529321/).
+
+TODO
+====
+Use join rating scores
+Using abitary calculated scores
+Similar Items
+Recommended Users
+
+Current Release
+===============
+
+v0.1 should be considered early alpha and not ready for production applications. Using ratings on the join table is not yet working. Offline recommendations not fully tested.
+
+Lots of performance optimisations still to be done.
 
 Example
 =======
