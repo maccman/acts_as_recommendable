@@ -49,6 +49,31 @@ user = User.find(:first)
 user.similar_users #=> [...]
 user.recommended_books #=> [...]
 
+Example 2
+=========
+
+class Movie < ActiveRecord::Base
+  has_many :user_movies
+  has_many :users, :through => :user_movies
+end
+
+class UserMovie < ActiveRecord::Base
+  belongs_to :movie
+  belongs_to :user
+end
+
+class User < ActiveRecord::Base
+  has_many :user_movies
+  has_many :movies, :through => :user_movies
+  acts_as_recommendable :movies, :through => :user_movies, :score => :score
+  # 'score' is an attribute on the users_movies table
+end
+
+user = User.find(:first)
+user.similar_users #=> [...]
+user.recommended_movies #=> [...]
+
+
 Contact
 =======
 alex@madebymany.co.uk
