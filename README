@@ -11,8 +11,9 @@ The plugin calculations can be made online and offline and stored using the rail
 
 Much thanks to Toby Segaran and his excellent book Programming Collective Intelligence (http://oreilly.com/catalog/9780596529321/).
 
-TODO
-====
+Features
+========
+
 Use join rating scores
 Using abitary calculated scores
 Similar Items
@@ -21,7 +22,7 @@ Recommended Users
 Current Release
 ===============
 
-v0.1 should be considered early alpha and not ready for production applications. Using ratings on the join table is not yet working. Offline recommendations not fully tested.
+v0.1 should be considered early alpha and not ready for production applications. Offline recommendations are not fully working.
 
 Lots of performance optimisations still to be done.
 
@@ -45,8 +46,8 @@ class User < ActiveRecord::Base
 end
 
 user = User.find(:first)
-user.similar_users #=> []
-user.recommended_books #=> []
+user.similar_users #=> [...]
+user.recommended_books #=> [...]
 
 Contact
 =======
