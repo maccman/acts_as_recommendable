@@ -48,5 +48,9 @@ user = User.find(:first)
 user.similar_users #=> []
 user.recommended_books #=> []
 
+Contact
+=======
+alex@madebymany.co.uk
+
 
 Copyright (c) 2008 Made by Many Ltd, released under the MIT license
