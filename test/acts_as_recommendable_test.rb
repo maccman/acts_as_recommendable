@@ -83,15 +83,6 @@ class ActsAsRecommendableTest < Test::Unit::TestCase
     assert recommended_books[0].recommendation_score > 0
   end
   
-  def test_dataset_returns_same_results
-    User.aar_options[:use_dataset] = false
-    recommended_books = get_recommend_books.collect(&:recommendation_score)
-    User.aar_options[:use_dataset] = true
-    recommended_books2 = get_recommend_books.collect(&:recommendation_score)
-    assert_equal recommended_books, recommended_books2
-    User.aar_options[:use_dataset] = false
-  end
-  
   private
     def get_sim_users
       user = User.find(1)

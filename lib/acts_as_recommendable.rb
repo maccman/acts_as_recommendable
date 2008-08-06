@@ -30,14 +30,11 @@ module MadeByMany
         end
           
         define_method "recommended_#{options[:on_class].name.underscore.pluralize}" do
-          # We're not using the dataset yet,
-          # it's not ready...
-          #
-          # if self.aar_options[:use_dataset]
-          #   Logic.dataset_recommended(self, options)
-          # else
+          if self.aar_options[:use_dataset]
+            Logic.dataset_recommended(self, options)
+          else
             Logic.recommended(self, options)
-          # end
+          end
         end
         
         def self.aar_dataset(force = false)
@@ -155,10 +152,11 @@ module MadeByMany
       end
         
       def self.recommended(user, options)
-        totals = {}
-        simSums = {}
-        prefs = self.prefs(options)
-        user = user.id
+        totals        = {}
+        sim_sums      = {}
+        prefs         = self.prefs(options)
+        user          = user.id
+        user_ratings  = prefs[user]
   
         prefs.keys.each do |other|
           # don't compare me to myself
@@ -175,8 +173,8 @@ module MadeByMany
               totals.default = 0
               totals[item] += prefs[other][item] * sim
               # sum of similarities
-              simSums.default = 0
-              simSums[item] += sim
+              sim_sums.default = 0
+              sim_sums[item] += sim
             end
           end
         end
@@ -185,7 +183,7 @@ module MadeByMany
         rankings = []
         items = []
         totals.each do |item,total|
-          rankings << [total/simSums[item], item]
+          rankings << [total/sim_sums[item], item]
         end
         
         # So we can do everything in one SQL query
@@ -221,10 +219,10 @@ module MadeByMany
       end
       
       def self.dataset_recommended(user, options)
-        scores = {}
+        scores    = {}
         total_sim = {}
-        items = user.aar_items_with_scores
-        item_ids = items.values.collect(&:id)
+        items     = user.aar_items_with_scores
+        item_ids  = items.values.collect(&:id)
         
         item_ids.each do |item_id|
           ratings = options[:class].aar_dataset[item_id]
@@ -251,7 +249,7 @@ module MadeByMany
         # Divide each total score by total weighting to get an average
         rankings = []
         scores.each do |item, score|
-          rankings << [0, item] and next if score == 0
+          next unless score > 0.0
           rankings << [score/total_sim[item], item]
         end
         
@@ -262,8 +260,9 @@ module MadeByMany
 
         rankings.sort_by {|score, _| score }.reverse.collect {|score, item_id|
           item = ar_items[item_id]
-          item.instance_variable_set('@recommendation_score', score)
-          def item.recommendation_score; return @recommendation_score; end
+          def item.recommendation_score; @recommendation_score; end
+          def item.recommendation_score=(d); @recommendation_score = d; end
+          item.recommendation_score = score
           item
         }
       end
