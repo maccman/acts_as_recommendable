@@ -110,6 +110,9 @@ user.recommended_books #=> [...]
     # Any other datasets...
   end
   
+# If you only want to use the dataset in production put this in production.rb:
+  User.aar_options[:use_dataset] = true
+  
 # Note:
 # user.similar_users doesn't use the dataset
 #
