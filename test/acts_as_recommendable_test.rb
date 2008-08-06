@@ -83,6 +83,12 @@ class ActsAsRecommendableTest < Test::Unit::TestCase
     assert recommended_books[0].recommendation_score > 0
   end
   
+  def test_me
+    puts
+    require 'ruby-debug'; debugger
+    puts
+  end
+  
   private
     def get_sim_users
       user = User.find(1)
