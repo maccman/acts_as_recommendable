@@ -114,7 +114,7 @@ user.recommended_books #=> [...]
 # user.similar_users doesn't use the dataset
 #
 # The advantage of using a dataset is that you don't need to load all the users & items into
-# memory (which you do normally).
+# memory (which you do normally). The disadvantage is that you won't get as accurate results.
 
 Contact
 =======
