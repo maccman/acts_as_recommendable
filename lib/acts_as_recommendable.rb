@@ -68,33 +68,46 @@ module MadeByMany
       
     module Logic
       
-      def self.prefs(options)
-        items = options[:on_class].find(:all)
+      def self.matrix(options)
+        items = options[:on_class].find(:all).collect(&:id)
         prefs = {}
-        options[:class].find(:all, :include => options[:on]).each do |user|
+        users = options[:class].find(:all, :include => options[:on])
+        users.each do |user|
           prefs[user.id] ||= {}
-          items.each do |item|
-            if user.aar_items_with_scores[item.id]
-              score = user.aar_items_with_scores[item.id].aar_score
-              prefs[user.id][item.id] = score
-            else
-              prefs[user.id][item.id] = 0.0
+          items.each do |item_id|
+            if user.aar_items_with_scores[item_id]
+              score = user.aar_items_with_scores[item_id].aar_score
+              prefs[user.id][item_id] = score
             end
           end
         end
-        prefs
+        [items, prefs]
+      end
+      
+      def self.inverted_matrix(options)
+        items = options[:on_class].find(:all).collect(&:id)
+        prefs = {}
+        users = options[:class].find(:all, :include => options[:on])
+        items.each do |item_id|
+          prefs[item_id] ||= {}
+          users.each do |user|
+            if user.aar_items_with_scores[item_id]
+              score = user.aar_items_with_scores[item_id].aar_score
+              prefs[item_id][user.id] = score
+            end
+          end
+        end
+        [users.collect(&:id), prefs]
       end
     
       # Euclidean distance 
-      def self.sim_distance(prefs, person1, person2)
-        si = mutual_items(prefs[person1], prefs[person2])
-        return 0 if si.length == 0
+      def self.sim_distance(prefs, items, person1, person2)
+        return 0 if items.length == 0
 
         squares = []
-        prefs[person1].keys.each do |item|
-          if prefs[person2].include? item
-            squares << (prefs[person1][item] - prefs[person2][item]) ** 2
-          end
+        
+        items.each do |item|
+          squares << ((prefs[person1][item] || 0.0) - (prefs[person2][item] || 0.0)) ** 2
         end
         
         sum_of_squares = squares.inject { |sum,value| sum += value }
@@ -102,20 +115,20 @@ module MadeByMany
       end
     
       # Pearson score
-      def self.sim_pearson(prefs, person1, person2)          
-        si = mutual_items(prefs[person1], prefs[person2])
-        n = si.length
-
+      def self.sim_pearson(prefs, items, person1, person2)
+        n = items.length
         return 0 if n == 0
 
         sum1 = sum2 = sum1Sq = sum2Sq = pSum = 0.0
         
-        si.each do |item|
-          sum1   += prefs[person1][item]
-          sum2   += prefs[person2][item]
-          sum1Sq += prefs[person1][item] ** 2
-          sum2Sq += prefs[person2][item] ** 2
-          pSum   += prefs[person2][item] * prefs[person1][item]
+        items.each do |item|
+          prefs1_item = prefs[person1][item] || 0.0
+          prefs2_item = prefs[person2][item] || 0.0
+          sum1   += prefs1_item
+          sum2   += prefs2_item
+          sum1Sq += prefs1_item ** 2
+          sum2Sq += prefs2_item ** 2
+          pSum   += prefs2_item * prefs1_item
         end
 
         num = pSum - ( ( sum1 * sum2 ) / n )
@@ -128,10 +141,10 @@ module MadeByMany
       
       def self.similar(user, options)
         rankings = []
-        prefs = self.prefs(options)
+        items, prefs = self.matrix(options)
         prefs.each do |u, _|
           next if u == user.id
-          rankings << [self.__send__(options[:algorithm], prefs, user.id, u), u]
+          rankings << [self.__send__(options[:algorithm], prefs, items, user.id, u), u]
         end
         
         # Return the sorted list
@@ -154,7 +167,7 @@ module MadeByMany
       def self.recommended(user, options)
         totals        = {}
         sim_sums      = {}
-        prefs         = self.prefs(options)
+        items, prefs  = self.matrix(options)
         user          = user.id
         user_ratings  = prefs[user]
   
@@ -162,7 +175,7 @@ module MadeByMany
           # don't compare me to myself
           next if other == user
 
-          sim = self.__send__(options[:algorithm], prefs, user, other)
+          sim = self.__send__(options[:algorithm], prefs, items, user, other)
 
           # ignore scores of zero or lower
           next if sim <= 0
@@ -206,13 +219,13 @@ module MadeByMany
       
       def self.dataset(options)
         result = {}
-        item_prefs = self.tranform_prefs(self.prefs(options))
-        for item in item_prefs.keys
+        users, prefs = self.inverted_matrix(options)
+        for item in prefs.keys
           scores = []
-          for other in item_prefs.keys
-            scores << [self.__send__(options[:algorithm], item_prefs, item, other), other]
+          for other in prefs.keys
+            scores << [self.__send__(options[:algorithm], prefs, users, item, other), other]
           end
-          scores = scores.sort_by {|score,_| score }.reverse
+          scores = scores.sort_by {|score, _| score }.reverse
           result[item] = scores
         end
         result
@@ -266,28 +279,6 @@ module MadeByMany
           item
         }
       end
-      
-      private
-
-        def self.mutual_items(person1, person2)
-          si = []
-          person1.each_pair do |item,value|
-            si << item if person2.include?(item)
-          end
-          si
-        end
-      
-        def self.tranform_prefs(prefs)
-          result = {}
-          for person in prefs.keys
-            for item in prefs[person].keys
-              result[item] = {} if result[item] == nil
-              # Flip item and person
-              result[item][person] = prefs[person][item]
-            end
-          end
-          return result
-        end
     
     end
 

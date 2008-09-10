@@ -6,20 +6,35 @@ module MadeByMany
         inline do |builder|
           builder.c '
           #include <math.h>
-          double c_sim_pearson(VALUE si, VALUE prefs1, VALUE prefs2, int n) {
+          #include "ruby.h"
+          double c_sim_pearson(VALUE items, int n, VALUE prefs1, VALUE prefs2) {
             double sum1 = 0.0;
             double sum2 = 0.0;
             double sum1Sq = 0.0;
             double sum2Sq = 0.0;
             double pSum = 0.0;
             
-            VALUE *prefs1_a = RARRAY(prefs1)->ptr;
-            VALUE *prefs2_a = RARRAY(prefs2)->ptr;
+            VALUE *items_a  = RARRAY(items) ->ptr;
             
             int i;
-            for(i=0; i<n; i++) {
-              double prefs1_item = NUM2DBL(prefs1_a[i]);
-              double prefs2_item = NUM2DBL(prefs2_a[i]);
+            for(i=0; i<n; i++) {              
+              VALUE prefs1_item_ob;
+              VALUE prefs2_item_ob;
+              
+              double prefs1_item;
+              double prefs2_item;
+              
+              if (!st_lookup(RHASH(prefs1)->tbl, items_a[i], &prefs1_item_ob)) {
+                prefs1_item = 0.0;
+              } else {
+                prefs1_item = NUM2DBL(prefs1_item_ob);
+              }
+              
+              if (!st_lookup(RHASH(prefs2)->tbl, items_a[i], &prefs2_item_ob)) {
+                prefs2_item = 0.0;
+              } else {
+                prefs2_item = NUM2DBL(prefs2_item_ob);
+              }
                             
               sum1   += prefs1_item;
               sum2   += prefs2_item;
@@ -47,14 +62,10 @@ module MadeByMany
     
     module Logic  
       # Pearson score
-      def self.sim_pearson(prefs, person1, person2)
-        si = mutual_items(prefs[person1], prefs[person2])
-        
-        n = si.length
-
+      def self.sim_pearson(prefs, items, person1, person2)
+        n = items.length
         return 0 if n == 0
-
-        Optimizations.c_sim_pearson(si, prefs[person1].values, prefs[person2].values, n)
+        Optimizations.c_sim_pearson(items, n, prefs[person1], prefs[person2])
       end
 
     end     
