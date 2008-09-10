@@ -49,6 +49,7 @@ module MadeByMany
           @aar_items_with_scores ||= begin
             self.__send__(self.aar_options[:through]).collect {|ui|
               item = ui.__send__(self.aar_options[:on_singular])
+              next unless item
               if self.aar_options[:score]
                 score = ui.__send__(self.aar_options[:score]).to_f
                 score = 1.0 if !score or score <= 0
@@ -59,7 +60,7 @@ module MadeByMany
               def item.aar_score=(d); @aar_score = d; end
               item.aar_score = score
               item
-            }.inject({}) {|h, item| h[item.id] = item; h }
+            }.compact.inject({}) {|h, item| h[item.id] = item; h }
           end
         end
         
