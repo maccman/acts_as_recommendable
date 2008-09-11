@@ -19,12 +19,15 @@ module MadeByMany
       def acts_as_recommendable(on, options = {})
         raise "You need to specify ':through'" unless options[:through]
         
-        options[:algorithm]   ||= :sim_pearson
-        options[:use_dataset] ||= false
-        options[:split_dataset] ||= true
+        defaults = {
+          :algorithm      => :sim_pearson,
+          :use_dataset    => false,
+          :split_dataset  => true,
+          :limit          => 10,
+          :min_score      => 0.0
+        }
         
-        options[:limit] ||= 10
-        options[:min_score] ||= 0.0
+        options = defaults.merge(options)
         
         options[:on]          =   on
         on_class_name         =   options[:on].to_s.singularize
