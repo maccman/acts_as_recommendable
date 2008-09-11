@@ -99,16 +99,8 @@ user.recommended_books #=> [...]
 
 # The example above uses a cached dataset.
 # You need to generate a cached dataset every so often (depending on how much your content changes)
-# You can do that by calling this method:
-  
-  User.aar_dataset(true)
-  
-# You could put this in a rake task, and run it with a cron job:
+# You can do that by calling the rake task recommendations:build, you should run this with a cron job every so often.
 
-  task :reload_dataset => [:environment] do
-    User.aar_dataset(true)
-    # Any other datasets...
-  end
   
 # If you only want to use the dataset in production put this in production.rb:
   User.aar_options[:use_dataset] = true
