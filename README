@@ -50,6 +50,9 @@ user = User.find(:first)
 user.similar_users #=> [...]
 user.recommended_books #=> [...]
 
+book = Book.find(:first)
+book.similar_books #=> [...]
+
 Example 2
 =========
 
@@ -110,6 +113,7 @@ user.recommended_books #=> [...]
 #
 # The advantage of using a dataset is that you don't need to load all the users & items into
 # memory (which you do normally). The disadvantage is that you won't get as accurate results.
+#
 
 Contact
 =======

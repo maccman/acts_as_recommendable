@@ -36,9 +36,15 @@ module MadeByMany
         
         class_inheritable_accessor :aar_options
         self.aar_options = options
+        
+        options[:on_class].class_eval do
+          define_method "similar_#{options[:on]}" do
+            Logic.similar_items(self, options)
+          end
+        end
 
         define_method "similar_#{options[:class].name.underscore.pluralize}" do
-          Logic.similar(self, options)
+          Logic.similar_users(self, options)
         end
           
         define_method "recommended_#{options[:on_class].name.underscore.pluralize}" do
@@ -67,7 +73,7 @@ module MadeByMany
             }.compact.inject({}) {|h, item| h[item.id] = item; h }
           end
         end
-        
+                
       end
     end
       
@@ -144,7 +150,7 @@ module MadeByMany
         num / den
       end
       
-      def self.similar(user, options)
+      def self.similar_users(user, options)
         rankings = []
         items, prefs = self.matrix(options)
         prefs.each do |u, _|
@@ -167,6 +173,43 @@ module MadeByMany
           def user.similar_score=(d); @similar_score = d; end
           user.similar_score = score
           user
+        }
+      end
+      
+      def self.similar_items(item, options)
+        if options[:use_dataset]
+          if options[:split_dataset]
+            rankings = Rails.cache.read("aar_#{options[:on]}_#{item.id}")
+          else
+            cached_dataset = Rails.cache.read("aar_#{options[:on]}_dataset")
+            logger.warn 'ActsRecommendable has an empty dataset - rebuild it' unless cached_dataset
+            rankings = cached_dataset && cached_dataset[self.id]
+          end      
+        else
+          users, prefs = self.inverted_matrix(options)
+          rankings = []
+          prefs.each do |i, _|
+            next if i == item.id
+            rankings << [self.__send__(options[:algorithm], prefs, users, item.id, i), i]
+          end
+        end
+        return [] unless rankings
+        
+        rankings = rankings.select {|score, _| score > 0.0 }
+        rankings = rankings.sort_by {|score, _| score }.reverse
+        rankings = rankings[0..(options[:limit] - 1)]
+        
+        # Return the sorted list
+        ranking_ids = rankings.collect {|_, u| u }
+        ar_items = options[:on_class].find_some_without_failing(ranking_ids)
+        ar_items = ar_items.inject({}){ |h, item| h[item.id] = item; h }
+        
+        rankings.collect {|score, item_id|
+          item = ar_items[item_id]
+          def item.similar_score; return @similar_score; end
+          def item.similar_score=(d); @similar_score = d; end
+          item.similar_score = score
+          item
         }
       end
         
