@@ -43,6 +43,14 @@ module Rails
       def fetch(key, options = {})
         @@data[key] ||= yield
       end
+      
+      def write(key, value)
+        @@data[key] = value
+      end
+      
+      def read(key)
+        @@data[key]
+      end
      end
   end
   

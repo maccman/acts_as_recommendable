@@ -6,11 +6,23 @@ module MadeByMany
     end
       
     module ActsMethods
+      # Send an array to ActiveRecord without fear that some elements don't exist.
+      def find_some_without_failing(ids, options = {})
+        conditions = " AND (#{sanitize_sql(options[:conditions])})" if options[:conditions]
+        ids_list   = ids.map { |id| quote_value(id,columns_hash[primary_key]) }.join(',')
+        options.update :conditions => "#{quoted_table_name}.#{connection.quote_column_name(primary_key)} IN (#{ids_list})#{conditions}"
+        result = find_every(options)
+        result
+      end
+      
       def acts_as_recommendable(on, options = {})
         raise "You need to specify ':through'" unless options[:through]
         
         options[:algorithm]   ||= :sim_pearson
         options[:use_dataset] ||= false
+        options[:split_dataset] ||= true
+        
+        options[:limit] ||= 10
         
         options[:on]          =   on
         on_class_name         =   options[:on].to_s.singularize
@@ -34,14 +46,6 @@ module MadeByMany
             Logic.dataset_recommended(self, options)
           else
             Logic.recommended(self, options)
-          end
-        end
-        
-        def self.aar_dataset(force = false)
-          Rails.cache.fetch("#{self.name}_aar_dataset", {
-            :force => force
-          }) do
-            Logic.dataset(self.aar_options)
           end
         end
         
@@ -148,13 +152,14 @@ module MadeByMany
           rankings << [self.__send__(options[:algorithm], prefs, items, user.id, u), u]
         end
         
-        # Return the sorted list
-        ranking_ids = rankings.collect {|_, u| u }
-        ar_users = options[:class].find(ranking_ids)
-        ar_users = ar_users.inject({}){ |h, user| h[user.id] = user; h }
-        
         rankings = rankings.select {|score, _| score > 0.0 }
         rankings = rankings.sort_by {|score, _| score }.reverse
+        rankings = rankings[0..(options[:limit] - 1)]
+        
+        # Return the sorted list
+        ranking_ids = rankings.collect {|_, u| u }
+        ar_users = options[:class].find_some_without_failing(ranking_ids)
+        ar_users = ar_users.inject({}){ |h, user| h[user.id] = user; h }
         
         rankings.collect {|score, user_id|
           user = ar_users[user_id]
@@ -200,14 +205,15 @@ module MadeByMany
           rankings << [total/sim_sums[item], item]
         end
         
-        # So we can do everything in one SQL query
-        ranking_ids = rankings.collect {|_, i| i }
-        ar_items = options[:on_class].find(ranking_ids)
-        ar_items = ar_items.inject({}){ |h, item| h[item.id] = item; h }
-
         # Return the sorted list
         rankings = rankings.select {|score, _| score > 0.0 }
         rankings = rankings.sort_by {|score, _| score }.reverse
+        rankings = rankings[0..(options[:limit] - 1)]
+        
+        # So we can do everything in one SQL query
+        ranking_ids = rankings.collect {|_, i| i }
+        ar_items = options[:on_class].find_some_without_failing(ranking_ids)
+        ar_items = ar_items.inject({}){ |h, item| h[item.id] = item; h }
         
         rankings.collect {|score, item_id|
           item = ar_items[item_id]
@@ -218,18 +224,16 @@ module MadeByMany
         }
       end
       
-      def self.dataset(options)
-        result = {}
-        users, prefs = self.inverted_matrix(options)
+      def self.generate_dataset(options, matrix = nil)
+        users, prefs = matrix || self.inverted_matrix(options)
         for item in prefs.keys
           scores = []
           for other in prefs.keys
             scores << [self.__send__(options[:algorithm], prefs, users, item, other), other]
           end
           scores = scores.sort_by {|score, _| score }.reverse
-          result[item] = scores
+          yield(item, scores) if block_given?
         end
-        result
       end
       
       def self.dataset_recommended(user, options)
@@ -237,10 +241,19 @@ module MadeByMany
         total_sim = {}
         items     = user.aar_items_with_scores
         item_ids  = items.values.collect(&:id)
+        unless options[:split_dataset]
+          cached_dataset = Rails.cache.read("aar_#{options[:on]}_dataset")
+          logger.warn 'ActsRecommendable has an empty dataset - rebuild it' unless cached_dataset
+        end
         
         item_ids.each do |item_id|
-          ratings = options[:class].aar_dataset[item_id]
+          if options[:split_dataset] 
+            ratings = Rails.cache.read("aar_#{options[:on]}_#{item_id}")
+          else
+            ratings = cached_dataset && cached_dataset[item_id]
+          end
           next unless ratings
+          
           ratings.each do |similarity, item2_id|
             # Ignore if this user has already rated this item
             next if item_ids.include?(item2_id)
@@ -267,18 +280,26 @@ module MadeByMany
           rankings << [score/total_sim[item], item]
         end
         
+        rankings = rankings.select {|score, _| score > 0.0 }
+        rankings = rankings.sort_by {|score, _| score }.reverse
+        rankings = rankings[0..(options[:limit] - 1)]
+        
         # So we can do everything in one SQL query
         ranking_ids = rankings.collect {|_, i| i }
-        ar_items = options[:on_class].find(ranking_ids)
+        ar_items = options[:on_class].find_some_without_failing(ranking_ids)
         ar_items = ar_items.inject({}){ |h, item| h[item.id] = item; h }
 
-        rankings.sort_by {|score, _| score }.reverse.collect {|score, item_id|
+        rankings.collect {|score, item_id|
           item = ar_items[item_id]
           def item.recommendation_score; @recommendation_score; end
           def item.recommendation_score=(d); @recommendation_score = d; end
           item.recommendation_score = score
           item
         }
+      end
+      
+      def self.logger
+        RAILS_DEFAULT_LOGGER
       end
     
     end
