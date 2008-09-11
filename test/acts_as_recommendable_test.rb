@@ -83,7 +83,26 @@ class ActsAsRecommendableTest < Test::Unit::TestCase
     assert recommended_books[0].recommendation_score > 0
   end
   
+  def test_dataset
+    use_dataset {
+      MadeByMany::ActsAsRecommendable::Logic.module_eval do
+        generate_dataset(User.aar_options) {|item, scores|
+          Rails.cache.write("aar_#{User.aar_options[:on]}_#{item}", scores)
+        }
+      end
+      recommended_books = get_recommend_books
+      assert_equal true, recommended_books.include?(Book.find(3))
+      assert recommended_books.find {|b| b == Book.find(3) }.recommendation_score > 0
+    }
+  end
+  
   private
+    def use_dataset
+      User.aar_options[:use_dataset] = true
+      yield
+      User.aar_options[:use_dataset] = false
+    end  
+  
     def get_sim_users
       user = User.find(1)
       user.similar_users
