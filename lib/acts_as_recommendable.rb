@@ -8,6 +8,7 @@ module MadeByMany
     module ActsMethods
       # Send an array to ActiveRecord without fear that some elements don't exist.
       def find_some_without_failing(ids, options = {})
+        return [] if !ids or ids.empty?
         conditions = " AND (#{sanitize_sql(options[:conditions])})" if options[:conditions]
         ids_list   = ids.map { |id| quote_value(id,columns_hash[primary_key]) }.join(',')
         options.update :conditions => "#{quoted_table_name}.#{connection.quote_column_name(primary_key)} IN (#{ids_list})#{conditions}"
@@ -23,6 +24,7 @@ module MadeByMany
         options[:split_dataset] ||= true
         
         options[:limit] ||= 10
+        options[:min_score] ||= 0.0
         
         options[:on]          =   on
         on_class_name         =   options[:on].to_s.singularize
@@ -158,7 +160,7 @@ module MadeByMany
           rankings << [self.__send__(options[:algorithm], prefs, items, user.id, u), u]
         end
         
-        rankings = rankings.select {|score, _| score > 0.0 }
+        rankings = rankings.select {|score, _| score > options[:min_score] }
         rankings = rankings.sort_by {|score, _| score }.reverse
         rankings = rankings[0..(options[:limit] - 1)]
         
@@ -195,7 +197,7 @@ module MadeByMany
         end
         return [] unless rankings
         
-        rankings = rankings.select {|score, _| score > 0.0 }
+        rankings = rankings.select {|score, _| score > options[:min_score] }
         rankings = rankings.sort_by {|score, _| score }.reverse
         rankings = rankings[0..(options[:limit] - 1)]
         
@@ -249,7 +251,7 @@ module MadeByMany
         end
         
         # Return the sorted list
-        rankings = rankings.select {|score, _| score > 0.0 }
+        rankings = rankings.select {|score, _| score > options[:min_score] }
         rankings = rankings.sort_by {|score, _| score }.reverse
         rankings = rankings[0..(options[:limit] - 1)]
         
@@ -323,7 +325,7 @@ module MadeByMany
           rankings << [score/total_sim[item], item]
         end
         
-        rankings = rankings.select {|score, _| score > 0.0 }
+        rankings = rankings.select {|score, _| score > options[:min_score] }
         rankings = rankings.sort_by {|score, _| score }.reverse
         rankings = rankings[0..(options[:limit] - 1)]
         
