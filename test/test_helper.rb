@@ -5,7 +5,6 @@ require 'rubygems'
 require 'test/unit'
 require 'active_record'
 require 'active_record/fixtures'
-require "#{File.dirname(__FILE__)}/../init"
 
 
 config = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
@@ -57,4 +56,10 @@ module Rails
   def self.cache
     return Cache
   end
+  
+  def self.version
+    '2.1.0'
+  end
 end
+
+require "#{File.dirname(__FILE__)}/../init"
