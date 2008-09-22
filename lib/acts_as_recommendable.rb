@@ -277,6 +277,7 @@ module MadeByMany
         for item in prefs.keys
           scores = []
           for other in prefs.keys
+            next if other == item
             scores << [self.__send__(options[:algorithm], prefs, users, item, other), other]
           end
           scores = scores.sort_by {|score, _| score }.reverse
