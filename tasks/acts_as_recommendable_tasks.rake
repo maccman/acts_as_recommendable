@@ -31,7 +31,7 @@ namespace :recommendations do
       pbar.finish
       matrix = [users.collect(&:id), prefs]
       
-      pbar = MadeByMany::ProgressBar.new('Gen matrix', prefs.keys.length)
+      pbar = MadeByMany::ProgressBar.new('Gen dataset', prefs.keys.length)
       
       if options[:split_dataset]
         generate_dataset(options, matrix) {|item, scores|
