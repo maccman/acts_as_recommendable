@@ -1,5 +1,6 @@
 # Because Rails' FileStore doesn't Marshal data
-if Rails.version == '2.1.0'
+rails_ver = Rails.respond_to?(:version) ? Rails.version : Rails::VERSION::STRING
+if rails_ver == '2.1.0'
 
   module ActiveSupport
     module Cache

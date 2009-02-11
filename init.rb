@@ -9,7 +9,7 @@ require File.dirname(__FILE__) + '/lib/cache_fix'
 # Fix RubyInline's permission problem,
 # RubyInline doesn't like directories with
 # group write permissions (like /tmp).
-ENV['INLINEDIR'] = File.join(Rails.root, 'tmp', 'rubyinline')
+ENV['INLINEDIR'] = File.join(Rails.respond_to?(:root) ? Rails.root : RAILS_ROOT, 'tmp', 'rubyinline')
 begin
   require 'inline'
   require File.dirname(__FILE__) + '/lib/optimizations'
