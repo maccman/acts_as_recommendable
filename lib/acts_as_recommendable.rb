@@ -17,8 +17,6 @@ module MadeByMany
       end
       
       def acts_as_recommendable(on, options = {})
-        raise "You need to specify ':through'" unless options[:through]
-        
         defaults = {
           :algorithm      => :sim_pearson,
           :use_dataset    => false,
@@ -28,16 +26,23 @@ module MadeByMany
         }
         
         options = defaults.merge(options)
-        
+
+        # reflect on the specified association to derive the extra details we need
         options[:on]          =   on
-        on_class_name         =   options[:on].to_s.singularize
+        assoc = self.reflections[on.to_sym]
+        through_assoc = assoc.through_reflection
+        options[:through] = through_assoc.name
+        raise "No association specified to recommend." if assoc.nil?
+        raise "The #{on} association does not have a :through association" unless through_assoc
+        
+        on_class_name         =   assoc.class_name
         options[:on_singular] ||= on_class_name.downcase
-        options[:on_class]    ||= on_class_name.camelize.constantize
+        options[:on_class]    ||= assoc.klass
         
         options[:class] = self
         
-        options[:through_singular]  ||= options[:through].to_s.singularize
-        options[:through_class]     ||= options[:through_singular].camelize.constantize
+        options[:through_singular]  ||= through_assoc.class_name.downcase
+        options[:through_class]     ||= through_assoc.klass
         
         class_inheritable_accessor :aar_options
         self.aar_options = options
