@@ -193,7 +193,7 @@ module MadeByMany
           else
             cached_dataset = Rails.cache.read("aar_#{options[:on]}_dataset")
             logger.warn 'ActsRecommendable has an empty dataset - rebuild it' unless cached_dataset
-            rankings = cached_dataset && cached_dataset[self.id]
+            rankings = cached_dataset && cached_dataset[item.id]
           end      
         else
           users, prefs = self.inverted_matrix(options)
