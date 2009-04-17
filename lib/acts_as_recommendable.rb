@@ -36,7 +36,7 @@ module MadeByMany
         raise "The #{on} association does not have a :through association" unless through_assoc
         
         on_class_name         =   assoc.class_name
-        options[:on_singular] ||= on_class_name.downcase
+        options[:on_singular] ||= on_class_name.underscore
         options[:on_class]    ||= assoc.klass
         
         options[:class] = self
